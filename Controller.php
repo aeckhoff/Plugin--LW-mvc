@@ -31,11 +31,22 @@ class Controller
         $this->request = $this->dic->getLwRequest();
         $dispatchClass = $baseNamespace.'Domain\DomainEventDispatch';
         $this->dispatch = $dispatchClass::getInstance();
+        $this->setCommand($this->request->getAlnum('cmd'));
+    }
+    
+    public function setCommand($cmd)
+    {
+        $this->command = $cmd;
+    }
+    
+    public function getCommand($cmd)
+    {
+        return $this->command;
     }
     
     public function execute()
     {
-        $methodName = $this->request->getAlnum('cmd')."Action";
+        $methodName = $this->getCommand()."Action";
         if (method_exists($this, $methodName)) {
             return call_user_method($methodName, $this);
         }
