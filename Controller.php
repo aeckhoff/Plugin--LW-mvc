@@ -39,7 +39,7 @@ class Controller
         $this->command = $cmd;
     }
     
-    public function getCommand($cmd)
+    public function getCommand()
     {
         return $this->command;
     }
