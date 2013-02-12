@@ -23,6 +23,13 @@ namespace LWmvc;
 
 class Controller
 {
+    
+    protected $defaultAction;
+    protected $dic;
+    protected $request;
+    protected $dispatch;
+    protected $command;
+    
     public function __construct($baseNamespace, $defaultAction)
     {
         $this->defaultAction = $defaultAction;
