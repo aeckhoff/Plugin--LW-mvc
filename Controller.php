@@ -21,24 +21,12 @@
 
 namespace LWmvc;
 
-class Controller
+class Controller extends ControllerAction
 {
-    
-    protected $defaultAction;
-    protected $dic;
-    protected $request;
-    protected $dispatch;
-    protected $command;
-    
-    public function __construct($baseNamespace, $defaultAction)
+    public function __construct($cmd, $oid)
     {
-        $this->defaultAction = $defaultAction;
-        $dicClass = $baseNamespace.'Services\dic';
-        $this->dic = new $dicClass();
-        $this->request = $this->dic->getLwRequest();
-        $dispatchClass = $baseNamespace.'Domain\DomainEventDispatch';
-        $this->dispatch = $dispatchClass::getInstance();
-        $this->setCommand($this->request->getAlnum('cmd'));
+        $this->setCommand($cmd);
+        $this->setContentObjectId($oid);
     }
     
     public function setCommand($cmd)
@@ -50,70 +38,14 @@ class Controller
     {
         return $this->command;
     }
-    
-    public function execute()
+
+    public function setContentObjectId($oid)
     {
-        $methodName = $this->getCommand()."Action";
-        if (method_exists($this, $methodName)) {
-            return call_user_method($methodName, $this);
-        }
-        else {
-            return call_user_method($this->defaultAction, $this);
-        }
+        $this->oid = $oid;
     }
     
-    protected function returnRenderedView($view)
+    public function getContentObjectId()
     {
-        $response = \LWddd\Response::getInstance();
-        $response->setOutputByKey('output', $view->render());
-        return $response;
-    }
-    
-    protected function buildReloadResponse($array)
-    {
-        $response = \LWddd\Response::getInstance();
-        foreach($array as $key => $value) {
-            $response->setParameterByKey($key, $value);
-        }
-        return $response;
-    }
-    
-    protected function executeDomainEvent($domain, $event, $parameterArray=array(), $dataArray=array())
-    {
-        $event = \LWddd\DomainEvent::getInstance($domain, $event);
-        foreach($parameterArray as $key => $value) {
-            $event->setParameterByKey($key, $value);
-        }
-        foreach($dataArray as $key => $value) {
-            $event->setDataByKey($key, $value);
-        }
-        return $this->dispatch->execute($event);
-    }
-    
-    protected function buildDeleteAction($domain, $id)
-    {
-        $response = $this->executeDomainEvent($domain, 'deleteById', array("id"=>$id));
-        if ($response->getParameterByKey("deleted") === true) {
-            return $this->buildReloadResponse(array("cmd"=>"showList", "response"=>2));
-        }
-        throw new \Exception($response->getDataByKey("errorMessage"));
-    }
-    
-    protected function buildSaveAction($domain, $data, $id)
-    {
-        $response = $this->executeDomainEvent($domain, 'save', array("id"=>$id), array("postArray"=>$data));
-        if ($response->getParameterByKey("error")) {
-            return $this->editFormAction($response->getDataByKey("error"));
-        }
-        return $this->buildReloadResponse(array("cmd"=>"showList", "response"=>1));
-    }
-    
-    protected function buildAddAction($domain, $data)
-    {
-        $response = $this->executeDomainEvent($domain, 'add', array(), array('postArray'=>$data));
-        if ($response->getParameterByKey("error")) {
-            return $this->addFormAction($response->getDataByKey("error"));
-        }
-        return $this->buildReloadResponse(array("cmd"=>"showList", "response"=>1));
+        return $this->oid;
     }
 }
