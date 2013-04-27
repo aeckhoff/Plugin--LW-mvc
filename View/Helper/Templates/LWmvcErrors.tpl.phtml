@@ -1,0 +1,12 @@
+<div class="alert alert-block alert-error">
+    <?php foreach($this->error as $errorcode => $array): ?>
+    <h3 class="alert-heading">Fehler:</h3>
+    <p><?php 
+        $errormsg = $this->text[$errorcode];
+        foreach($array['options'] as $key => $value) {
+            $errormsg = str_replace("{_".$key."_}", $value, $errormsg);
+        }
+        echo $errormsg;
+    ?></p>
+    <?php endforeach; ?>
+</div>

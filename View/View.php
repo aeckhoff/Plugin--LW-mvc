@@ -19,7 +19,7 @@
 *  
 ***************************************************************************/
 
-namespace LWmvc;
+namespace LWmvc\View;
 
 class View
 {
@@ -73,9 +73,9 @@ class View
         $this->view->errors = $errors;
     }
     
-    public function setAggregate($aggregate)
+    public function setCollection($collection)
     {
-        $this->view->aggregate = $aggregate;
+        $this->view->collection = $collection;
     }
     
     public function setIsDeletableSpecification($isDeletable)

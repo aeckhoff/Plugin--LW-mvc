@@ -1,0 +1,5 @@
+<select class="input-xlarge" id="<?php echo $this->FieldId; ?>" name="<?php echo $this->FieldId; ?>">
+    <?php foreach($this->Collection as $Entry): ?>
+    <option value="<?php echo $Entry->getValueByKey($this->EntryIdentifier); ?>"<?php if($this->EntryValue == $Entry->getValueByKey($this->EntryIdentifier)): ?> selected="selected"<?php endif; ?>><?php echo $Entry->getValueByKey($this->EntryLabel); ?></option>
+    <?php endforeach; ?>
+</select> 
