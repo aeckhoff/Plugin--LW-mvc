@@ -37,7 +37,12 @@ class lwCommandLoadAllEntitiesCollection extends \LWmvc\Model\CommandResolver
     
     public function resolve()
     {
-        $items = $this->getQueryHandler()->loadAllEntries();
+        if ($this->command->getParameterByKey('showDeletedEntries') == 1) {
+            $items = $this->getQueryHandler()->loadAllEntries(true);
+        }
+        else {
+            $items = $this->getQueryHandler()->loadAllEntries();
+        }
         $collection = \LWmvc\Model\EntityCollectionFactory::buildCollectionFromQueryResult($this->ObjectClass, $items);
         $this->command->getResponse()->setDataByKey('allEntitiesCollection', $collection);
         return $this->command->getResponse();        

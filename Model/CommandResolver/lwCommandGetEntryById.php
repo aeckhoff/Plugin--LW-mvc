@@ -37,7 +37,12 @@ class lwCommandGetEntryById extends \LWmvc\Model\CommandResolver
     
     public function resolve()
     {
-        $dto = $this->getQueryHandler()->loadEntryById($this->command->getParameterByKey("id"));
+        if ($this->command->getParameterByKey('showDeletedEntries') == 1) {
+            $dto = $this->getQueryHandler()->loadEntryById($this->command->getParameterByKey("id"), true);
+        }
+        else {
+            $dto = $this->getQueryHandler()->loadEntryById($this->command->getParameterByKey("id"));
+        }
         if ($this->command->getParameterByKey("decorated") == true) {
             $config = $this->command->getParameterByKey('configuration');
             $decorator = \LWmvc\Model\DecoratorFactory::buildDecorator($this->baseNamespace);

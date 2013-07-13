@@ -27,10 +27,10 @@ class DataQueryHandler
         $this->orderDirection = $direction;
     }
     
-    public function loadAllEntries()
+    public function loadAllEntries($showDeletedColumns=false)
     {
-        if ($this->useExtendedColumns == true) {
-            $this->db->setStatement("SELECT * FROM ".$this->table." WHERE lw_deleted < 1 ORDER BY ".$this->orderColumn." ".$this->orderDirection);
+        if ($this->useExtendedColumns == true && $showDeletedColumns != true) {
+            $this->db->setStatement("SELECT * FROM ".$this->table." WHERE ( lw_deleted < 1 OR lw_deleted IS NULL ) ORDER BY ".$this->orderColumn." ".$this->orderDirection);
         }
         else {
             $this->db->setStatement("SELECT * FROM ".$this->table." ORDER BY ".$this->orderColumn." ".$this->orderDirection);
@@ -47,10 +47,10 @@ class DataQueryHandler
      * @param int $id
      * @return array
      */
-    public function loadEntryById($id)
+    public function loadEntryById($id, $showDeletedColumns=false)
     {
-        if ($this->useExtendedColumns == true) {
-            $this->db->setStatement("SELECT * FROM ".$this->table." WHERE id = :id AND lw_deleted < 1");
+        if ($this->useExtendedColumns == true && $showDeletedColumns != true) {
+            $this->db->setStatement("SELECT * FROM ".$this->table." WHERE id = :id AND ( lw_deleted < 1 OR lw_deleted IS NULL ) ");
         }
         else {
             $this->db->setStatement("SELECT * FROM ".$this->table." WHERE id = :id");

@@ -38,6 +38,21 @@ class View
         $this->view->type = $type;
     }
 
+    public function getFormType()
+    {
+        return $this->view->type;
+    }
+
+    public function setShowDeletedEntries($bool = false)
+    {
+        if ($bool == true) {
+            $this->showDeletedEntries = true;
+        }
+        else {
+            $this->showDeletedEntries = false;
+        }
+    }
+
     public function setResponse($response)
     {
         $this->response = $response;
@@ -66,6 +81,11 @@ class View
     public function setEntity($entity)
     {
         $this->view->entity = $entity;
+    }
+    
+    public function getEntity()
+    {
+        return $this->view->entity;
     }
     
     public function setErrors($errors=false)

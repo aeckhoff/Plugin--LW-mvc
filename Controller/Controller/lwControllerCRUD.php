@@ -38,12 +38,49 @@ class lwControllerCRUD extends \LWmvc\Controller\Controller
     public function execute()
     {
         $method = $this->getCommand()."Action";
-        if (method_exists($this, $method)) {
+        if(method_exists($this->HookResolver, $method)) {
+            return $this->HookResolver->$method();
+        }
+        elseif (method_exists($this, $method)) {
             return $this->$method();
         }
         else {
             throw new \LWmvc\Model\ControllerMethodNotFoundException($this->getCommand());
         }
+    }
+    
+    public function showDeletedEntriesListAction()
+    {
+        $_SESSION[$this->packageName][$this->modelName]['showDeletedEntries'] = true;
+        if (method_exists($this->HookResolver, "PostShowDeletedEntriesListAction")) {
+            $Response = $this->HookResolver->PostShowDeletedEntriesListAction($response);
+            if ($Response->getParameterByKey("break") == 1) {
+                return $Response;
+            }
+        }
+        return $this->buildReloadResponse(array("cmd"=>"showList"));
+    }    
+    
+    public function showActiveEntriesListAction()
+    {
+        $_SESSION[$this->packageName][$this->modelName]['showDeletedEntries'] = false;
+        if (method_exists($this->HookResolver, "PostSshowActiveEntriesListAction")) {
+            $Response = $this->HookResolver->PostSshowActiveEntriesListAction($response);
+            if ($Response->getParameterByKey("break") == 1) {
+                return $Response;
+            }
+        }
+        return $this->buildReloadResponse(array("cmd"=>"showList"));
+    }    
+    
+    public function downloadCsvAction()
+    {
+        $Response = \LWmvc\Model\CommandDispatch::getInstance()->execute($this->packageName, $this->modelName, 'lwCommandLoadAllEntitiesCollection', array('showDeletedEntries'=> $_SESSION[$this->packageName][$this->modelName]['showDeletedEntries']));
+        $Collection = $Response->getDataByKey("allEntitiesCollection");
+        
+        $view = new \LWmvc\View\BaseViews\downloadCsvView();
+        $view->setCollection($Collection);
+        return $this->returnRenderedView($view);
     }
     
     public function showListAction()
@@ -55,12 +92,13 @@ class lwControllerCRUD extends \LWmvc\Controller\Controller
             }
         }
         
-        $Response = \LWmvc\Model\CommandDispatch::getInstance()->execute($this->packageName, $this->modelName, 'lwCommandLoadAllEntitiesCollection');
+        $Response = \LWmvc\Model\CommandDispatch::getInstance()->execute($this->packageName, $this->modelName, 'lwCommandLoadAllEntitiesCollection', array('showDeletedEntries'=> $_SESSION[$this->packageName][$this->modelName]['showDeletedEntries']));
         $Collection = $Response->getDataByKey("allEntitiesCollection");
         
         $viewname = "\\".$this->packageName."\View\ListView";
         $view = new $viewname();
         $view->setCollection($Collection);
+        $view->setShowDeletedEntries($_SESSION[$this->packageName][$this->modelName]['showDeletedEntries']);
         return $this->returnRenderedView($view);
     }
     
@@ -101,17 +139,18 @@ class lwControllerCRUD extends \LWmvc\Controller\Controller
 
         $response = \LWmvc\Model\CommandDispatch::getInstance()->execute($this->packageName, $this->modelName, 'lwCommandAdd', false, array('postArray'=>$this->request->getPostArray()));
 
+        if ($response->getParameterByKey("error")) {
+            $this->setError($response->getDataByKey("error"));
+            return $this->AddFormAction();
+        }
+
         if (method_exists($this->HookResolver, "PostAddAction")) {
             $Response = $this->HookResolver->PostAddAction($response);
             if ($Response->getParameterByKey("break") == 1) {
                 return $Response;
             }
         }
-        
-        if ($response->getParameterByKey("error")) {
-            $this->setError($response->getDataByKey("error"));
-            return $this->AddFormAction();
-        }
+
         return $this->buildReloadResponse(array("cmd"=>"showList", "response"=>1));
     }
     
@@ -127,27 +166,28 @@ class lwControllerCRUD extends \LWmvc\Controller\Controller
         $formView = new $formname();
         $formView->init("edit");
 
-        if (method_exists($this->HookResolver, "modifyFormViewAction")) {
-            $Response = $this->HookResolver->modifyFormViewAction($formView);
-            if ($Response->getParameterByKey("break") == 1) {
-                return $Response;
-            }
-        }        
-        
         if ($this->error) {
             $response = \LWmvc\Model\CommandDispatch::getInstance()->execute($this->packageName, $this->modelName, 'lwCommandGetEntryFromPostArray', array(), array("postArray"=>$this->request->getPostArray()));
         }
         else {
-            $response = \LWmvc\Model\CommandDispatch::getInstance()->execute($this->packageName, $this->modelName, 'lwCommandGetEntryById', array("decorated"=>true, "id"=>$this->request->getInt("id")));
+            $response = \LWmvc\Model\CommandDispatch::getInstance()->execute($this->packageName, $this->modelName, 'lwCommandGetEntryById', array("decorated"=>true, "id"=>$this->request->getInt("id"), 'showDeletedEntries'=> $_SESSION[$this->packageName][$this->modelName]['showDeletedEntries']));
         }                
         $entity = $response->getDataByKey('Entity');
         $entity->setId($this->request->getInt("id"));
         $formView->setEntity($entity);
 
+        if (method_exists($this->HookResolver, "modifyFormViewAction")) {
+            $Response = $this->HookResolver->modifyFormViewAction($formView);
+            if ($Response->getParameterByKey("break") == 1) {
+                return $Response;
+            }
+        }
+        
         $response = \LWmvc\Model\CommandDispatch::getInstance()->execute($this->packageName, $this->modelName, 'lwCommandGetSpecification', array('SpecificationName'=>'isDeletable'));
         $formView->setIsDeletableSpecification($response->getDataByKey('Specification'));
         
         $formView->setErrors($this->error);
+        $formView->setShowDeletedEntries($_SESSION[$this->packageName][$this->modelName]['showDeletedEntries']);
         return $this->returnRenderedView($formView);
     }
     
@@ -167,18 +207,19 @@ class lwControllerCRUD extends \LWmvc\Controller\Controller
              array('postArray'=>$this->request->getPostArray())
         );
         
+        if ($response->getParameterByKey("error")) {
+            $this->setError($response->getDataByKey("error"));
+            return $this->EditFormAction();
+        }
+
         if (method_exists($this->HookResolver, "PostSaveAction")) {
             $Response = $this->HookResolver->PostSaveAction($response);
             if ($Response->getParameterByKey("break") == 1) {
                 return $Response;
             }
         }
-        
-        if ($response->getParameterByKey("error")) {
-            $this->setError($response->getDataByKey("error"));
-            return $this->EditFormAction();
-        }
-        return $this->buildReloadResponse(array("cmd"=>"EditForm", "id"=>$this->request->getInt("id"), "response"=>1));
+
+        return $this->buildReloadResponse(array("cmd"=>"showList", "response"=>1));
     }
     
     public function deleteAction()
@@ -193,7 +234,11 @@ class lwControllerCRUD extends \LWmvc\Controller\Controller
         $response = \LWmvc\Model\CommandDispatch::getInstance()->execute($this->packageName, $this->modelName, 'lwCommandGetSpecification', array('SpecificationName'=>'isDeletable'));
         $isDeletableSpecification = $response->getDataByKey('Specification');
 
-        $response = \LWmvc\Model\CommandDispatch::getInstance()->execute($this->packageName, $this->modelName, 'lwCommandDelete', array("id"=>$this->request->getInt("id"), "isDeletableSpecification"=>$isDeletableSpecification));
+        $response = \LWmvc\Model\CommandDispatch::getInstance()->execute($this->packageName, $this->modelName, 'lwCommandGetEntryById', array("decorated"=>true, "id"=>$this->request->getInt("id")));
+        $entity = $response->getDataByKey('Entity');
+        $entity->setId($this->request->getInt("id"));
+
+        $response = \LWmvc\Model\CommandDispatch::getInstance()->execute($this->packageName, $this->modelName, 'lwCommandDelete', array("id"=>$this->request->getInt("id"), "isDeletableSpecification"=>$isDeletableSpecification), array("entity"=>$entity));
         
         if (method_exists($this->HookResolver, "PostDeleteAction")) {
             $Response = $this->HookResolver->PostDeleteAction($response);

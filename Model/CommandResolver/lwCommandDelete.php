@@ -37,9 +37,10 @@ class lwCommandDelete extends \LWmvc\Model\CommandResolver
     
     public function resolve()
     {
-        $command = $this->command->getDataByKey('command');
+        $entity = $this->command->getDataByKey('entity');
+        
         $isDeletableSpecification = $this->command->getParameterByKey("isDeletableSpecification");
-        if ($isDeletableSpecification->isSatisfiedBy($command)) {
+        if ($isDeletableSpecification->isSatisfiedBy($entity)) {
             $ok = $this->getCommandHandler()->deleteEntity($this->command->getParameterByKey("id"));
         }        
 

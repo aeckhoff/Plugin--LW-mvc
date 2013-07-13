@@ -46,6 +46,7 @@ class lwCommandAdd extends \LWmvc\Model\CommandResolver
             $id = $this->getCommandHandler()->addEntity($entity->getValues());
             $this->postSaveWork($id, $id, $entity);            
             $this->command->getResponse()->setParameterByKey('saved', true);
+            $this->command->getResponse()->setParameterByKey('id', $id);
         }
         else {
             $this->command->getResponse()->setDataByKey('error', $isValidSpecification->getErrors());

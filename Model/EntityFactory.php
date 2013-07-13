@@ -7,7 +7,7 @@ class EntityFactory
 
     public static function buildEntity($Objectname, $dto, $id=false)
     {
-        if (class_exists()) {
+        if (class_exists($Objectname)) {
             $entity = new $Objectname();
         }
         else {
