@@ -40,14 +40,14 @@ class ControllerAction
     
     protected function returnRenderedView($view)
     {
-        $response = \LWddd\Response::getInstance();
+        $response = \LWmvc\Model\Response::getInstance();
         $response->setOutputByKey('output', $view->render());
         return $response;
     }
     
     protected function buildReloadResponse($array)
     {
-        $response = \LWddd\Response::getInstance();
+        $response = \LWmvc\Model\Response::getInstance();
         foreach($array as $key => $value) {
             $response->setParameterByKey($key, $value);
         }
