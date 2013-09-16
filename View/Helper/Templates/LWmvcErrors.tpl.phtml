@@ -1,6 +1,6 @@
 <div class="alert alert-block alert-error">
     <?php foreach($this->error as $errorcode => $array): ?>
-    <h3 class="alert-heading">Fehler:</h3>
+    <h3 class="alert-heading"><?php if ($this->lang == "en"): ?>Error<?php else: ?>Fehler<?php endif; ?>:</h3>
     <p><?php 
         $errormsg = $this->text[$errorcode];
         foreach($array['options'] as $key => $value) {

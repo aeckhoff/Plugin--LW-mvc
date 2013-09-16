@@ -15,3 +15,4 @@
 "lwmvc_14","Es ist ein unbekannter Fehler aufgetreten."
 "lwmvc_15","Bitte nur 1 oder 0 eintragen."
 "lwmvc_16","Die Reihenfolge der Datumsangaben ist nicht korrekt."
+"lwmvc_17","Die Datei ist zu gross. {_maxsize_} ist erlaubt. Die ausgew&auml;hlte Datei ist aber {_actualsize_} gross."

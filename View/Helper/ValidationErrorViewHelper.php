@@ -32,6 +32,7 @@ class ValidationErrorViewHelper
             $view = new \lw_view(dirname(__FILE__)."/Templates/LWmvcErrors.tpl.phtml");
             $view->error = $error;
             $view->text = $this->text;
+            $view->lang = $this->language;
             return $view->render();
         }
     }

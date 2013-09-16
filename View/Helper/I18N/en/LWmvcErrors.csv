@@ -15,3 +15,4 @@
 "lwmvc_14","An unknown error has occured."
 "lwmvc_15","Only the numbers 1 or 0 may be entered."
 "lwmvc_16","The order of the dates entered is not valid."
+"lwmvc_17","The file is too big. {_maxsize_} is allowed. But the chosen file is {_actualsize_}."
